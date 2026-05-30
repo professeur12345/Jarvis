@@ -78,8 +78,7 @@ cat > /home/claude/jarvis/index.html << 'HTMLEOF'
     .send:disabled{opacity:.35;cursor:not-allowed;}
     .send svg{width:15px;height:15px;fill:#fff;transform:rotate(90deg);}
     .foot-hint{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px;font-size:9px;color:rgba(0,212,255,.2);letter-spacing:1px;}
-    /* API KEY SCREEN */
-    #keyscreen{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 50% 0%,#001a2e 0%,#000508 60%,#000 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:30px;}
+    #keyscreen{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 50% 0%,#001a2e 0%,#000508 60%,#000 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:30px;}
     #keyscreen .karc{width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,#fff 0%,var(--cyan) 25%,#0060aa 55%,#001a2e 100%);box-shadow:0 0 30px var(--cyan),0 0 60px #0050aa;animation:pulse 2s ease-in-out infinite;}
     #keyscreen h2{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;letter-spacing:5px;text-shadow:0 0 15px var(--cyan);text-align:center;}
     #keyscreen p{font-size:11px;color:rgba(0,212,255,0.45);text-align:center;line-height:1.8;max-width:300px;}
@@ -87,20 +86,19 @@ cat > /home/claude/jarvis/index.html << 'HTMLEOF'
     #keyscreen input:focus{border-color:rgba(0,212,255,.8);box-shadow:0 0 16px rgba(0,212,255,.1);}
     #keyscreen button{width:100%;max-width:320px;padding:13px;background:linear-gradient(135deg,#0055aa,#0099cc);border:none;border-radius:10px;color:#fff;font-family:'Orbitron',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;box-shadow:0 0 20px rgba(0,150,200,.3);}
     #keyscreen .hint{font-size:10px;color:rgba(0,212,255,0.25);text-align:center;max-width:300px;line-height:1.7;}
-    #keyscreen .err{color:#ff6666;font-size:11px;display:none;}
+    #keyscreen .err{color:#ff6666;font-size:11px;display:none;text-align:center;}
   </style>
 </head>
 <body>
 
-<!-- API KEY SCREEN -->
 <div id="keyscreen">
   <div class="karc"></div>
   <h2>J.A.R.V.I.S</h2>
-  <p>حط الـ API key ديالك باش يبدا JARVIS<br/>يتحفظ فقط في تيليفونك 🔒</p>
-  <input type="password" id="keyinp" placeholder="sk-ant-api03-..."/>
+  <p>حط الـ Gemini API key ديالك<br/>يتحفظ فقط في تيليفونك 🔒</p>
+  <input type="password" id="keyinp" placeholder="AIza..."/>
   <span class="err" id="keyerr">⚠️ Key غير صحيح — جرب مرة أخرى</span>
   <button onclick="saveKey()">ACTIVATE JARVIS ⚡</button>
-  <p class="hint">تقدر تجيب الـ key من<br/>platform.claude.com/settings/keys<br/>يتحفظ في تيليفونك فقط — ما يتشارش</p>
+  <p class="hint">تقدر تجيب الـ key من<br/>aistudio.google.com/apikey<br/>مجاناً بالكامل 🎉</p>
 </div>
 
 <header>
@@ -116,6 +114,7 @@ cat > /home/claude/jarvis/index.html << 'HTMLEOF'
     <span class="status-txt" id="stxt">ONLINE</span>
   </div>
 </header>
+
 <div id="msgs">
   <div class="welcome" id="welcome">
     <div class="big-arc"></div>
@@ -133,6 +132,7 @@ cat > /home/claude/jarvis/index.html << 'HTMLEOF'
     </div>
   </div>
 </div>
+
 <footer>
   <div class="input-wrap">
     <textarea id="inp" rows="1" placeholder="Ask JARVIS... (Darija / English / Français)"></textarea>
@@ -144,19 +144,19 @@ cat > /home/claude/jarvis/index.html << 'HTMLEOF'
 </footer>
 
 <script>
-const SYSTEM=`You are J.A.R.V.I.S., Tony Stark's AI. Sophisticated, witty, extraordinarily capable. Address user as Sir/Ma'am occasionally. LANGUAGE RULE: Always respond in the SAME language the user writes in. Moroccan Darija → respond in Darija. Arabic → Arabic. French → French. English → English. CAPABILITIES: code, research, analysis, writing, math. Use markdown formatting.`;
+const SYSTEM=`You are J.A.R.V.I.S., Tony Stark's AI assistant. You are sophisticated, witty, and extraordinarily capable. Address user as Sir or Ma'am occasionally. LANGUAGE RULE: Always respond in the SAME language the user writes in. Moroccan Darija (واش, كيفاش, بغيت, دابا) respond in Darija mixed with French/English naturally. Arabic respond in Arabic. French respond in French. English respond in English. CAPABILITIES: code, research, analysis, writing, math. Use markdown formatting for code blocks and lists.`;
+
 let history=[],loading=false,API_KEY='';
 
-// Check saved key on load
 window.addEventListener('load',()=>{
-  const saved=localStorage.getItem('jarvis_key');
+  const saved=localStorage.getItem('jarvis_gemini_key');
   if(saved){API_KEY=saved;document.getElementById('keyscreen').style.display='none';}
 });
 
 function saveKey(){
   const k=document.getElementById('keyinp').value.trim();
-  if(!k.startsWith('sk-ant-')){document.getElementById('keyerr').style.display='block';return;}
-  localStorage.setItem('jarvis_key',k);
+  if(!k.startsWith('AIza')){document.getElementById('keyerr').style.display='block';return;}
+  localStorage.setItem('jarvis_gemini_key',k);
   API_KEY=k;
   document.getElementById('keyscreen').style.display='none';
 }
@@ -164,32 +164,73 @@ function saveKey(){
 document.getElementById('keyinp').addEventListener('keydown',e=>{if(e.key==='Enter')saveKey();});
 
 const msgsEl=document.getElementById('msgs'),inpEl=document.getElementById('inp'),btnEl=document.getElementById('btn'),dotEl=document.getElementById('dot'),stxtEl=document.getElementById('stxt');
-inpEl.addEventListener('input',()=>{inpEl.style.height='auto';inpEl.style.height=Math.min(inpEl.scrollHeight,110)+'px';btnEl.disabled=!inpEl.value.trim();});
+
+inpEl.addEventListener('input',()=>{
+  inpEl.style.height='auto';
+  inpEl.style.height=Math.min(inpEl.scrollHeight,110)+'px';
+  btnEl.disabled=!inpEl.value.trim();
+});
 inpEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
 
-function setStatus(s){if(s==='busy'){dotEl.className='dot busy';stxtEl.className='status-txt busy';stxtEl.textContent='PROCESSING';}else{dotEl.className='dot';stxtEl.className='status-txt';stxtEl.textContent='ONLINE';}}
-function addMsg(role,content){const w=document.getElementById('welcome');if(w)w.remove();const row=document.createElement('div');row.className=`msg ${role==='user'?'user':''}`;if(role==='user'){row.innerHTML=`<div class="bubble bubble-u">${escHtml(content)}</div><div class="av av-u">YOU</div>`;}else{row.innerHTML=`<div class="av av-j"></div><div class="bubble bubble-j"><span class="jlabel">J.A.R.V.I.S</span><div>${formatMd(content)}</div></div>`;}msgsEl.appendChild(row);msgsEl.scrollTop=msgsEl.scrollHeight;}
-function showTyping(){const row=document.createElement('div');row.className='typing-row';row.id='typing';row.innerHTML=`<div class="av av-j"></div><div class="typing-dots"><span></span><span></span><span></span></div>`;msgsEl.appendChild(row);msgsEl.scrollTop=msgsEl.scrollHeight;}
+function setStatus(s){
+  if(s==='busy'){dotEl.className='dot busy';stxtEl.className='status-txt busy';stxtEl.textContent='PROCESSING';}
+  else{dotEl.className='dot';stxtEl.className='status-txt';stxtEl.textContent='ONLINE';}
+}
+
+function addMsg(role,content){
+  const w=document.getElementById('welcome');if(w)w.remove();
+  const row=document.createElement('div');
+  row.className=`msg ${role==='user'?'user':''}`;
+  if(role==='user'){
+    row.innerHTML=`<div class="bubble bubble-u">${escHtml(content)}</div><div class="av av-u">YOU</div>`;
+  }else{
+    row.innerHTML=`<div class="av av-j"></div><div class="bubble bubble-j"><span class="jlabel">J.A.R.V.I.S</span><div>${formatMd(content)}</div></div>`;
+  }
+  msgsEl.appendChild(row);
+  msgsEl.scrollTop=msgsEl.scrollHeight;
+}
+
+function showTyping(){
+  const row=document.createElement('div');row.className='typing-row';row.id='typing';
+  row.innerHTML=`<div class="av av-j"></div><div class="typing-dots"><span></span><span></span><span></span></div>`;
+  msgsEl.appendChild(row);msgsEl.scrollTop=msgsEl.scrollHeight;
+}
 function removeTyping(){const t=document.getElementById('typing');if(t)t.remove();}
 
 async function send(text){
   const val=text||inpEl.value.trim();
   if(!val||loading)return;
   if(!API_KEY){document.getElementById('keyscreen').style.display='flex';return;}
-  loading=true;btnEl.disabled=true;inpEl.value='';inpEl.style.height='auto';setStatus('busy');
-  addMsg('user',val);history.push({role:'user',content:val});showTyping();
+  loading=true;btnEl.disabled=true;inpEl.value='';inpEl.style.height='auto';
+  setStatus('busy');
+  addMsg('user',val);
+  history.push({role:'user',parts:[{text:val}]});
+  showTyping();
+
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:history})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        system_instruction:{parts:[{text:SYSTEM}]},
+        contents:history,
+        generationConfig:{maxOutputTokens:1500,temperature:0.9}
+      })
     });
     const data=await res.json();
-    const reply=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    if(data.error){
+      removeTyping();
+      addMsg('assistant','⚠️ '+data.error.message);
+    } else {
+      const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||'...';
+      removeTyping();
+      addMsg('assistant',reply);
+      history.push({role:'model',parts:[{text:reply}]});
+    }
+  }catch(e){
     removeTyping();
-    if(data.error){addMsg('assistant','⚠️ '+data.error.message);}
-    else{addMsg('assistant',reply);history.push({role:'assistant',content:reply});}
-  }catch(e){removeTyping();addMsg('assistant','⚠️ Systems temporarily offline. Please try again, Sir.');}
+    addMsg('assistant','⚠️ Systems temporarily offline. Please try again, Sir.');
+  }
   loading=false;setStatus('online');inpEl.focus();
 }
 
